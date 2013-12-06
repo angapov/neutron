@@ -28,6 +28,7 @@ from neutron.db import l3_dvrscheduler_db
 from neutron.db import l3_gwmode_db
 from neutron.db import l3_hamode_db
 from neutron.db import l3_hascheduler_db
+from neutron.db import portforwardings_db
 from neutron.plugins.common import constants
 
 
@@ -36,7 +37,8 @@ class L3RouterPlugin(common_db_mixin.CommonDbMixin,
                      l3_hamode_db.L3_HA_NAT_db_mixin,
                      l3_gwmode_db.L3_NAT_db_mixin,
                      l3_dvrscheduler_db.L3_DVRsch_db_mixin,
-                     l3_hascheduler_db.L3_HA_scheduler_db_mixin):
+                     l3_hascheduler_db.L3_HA_scheduler_db_mixin,
+                     portforwardings_db.PortForwardingDbMixin):
 
     """Implementation of the Neutron L3 Router Service Plugin.
 
@@ -49,7 +51,8 @@ class L3RouterPlugin(common_db_mixin.CommonDbMixin,
     """
     supported_extension_aliases = ["dvr", "router", "ext-gw-mode",
                                    "extraroute", "l3_agent_scheduler",
-                                   "l3-ha"]
+                                   "l3-ha",
+                                   "portforwarding"]
 
     def __init__(self):
         self.setup_rpc()
