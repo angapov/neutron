@@ -320,6 +320,43 @@ def _validate_hostroutes(data, valid_values=None):
         hostroutes.append(hostroute)
 
 
+def _validate_portforwardings(data, valid_values=None):
+    if not isinstance(data, list):
+        msg = _("Invalid data format for portforwarding: '%s'") % data
+        LOG.debug(msg)
+        return msg
+
+    expected_keys = ['protocol', 'outside_port',
+                     'inside_addr', 'inside_port']
+    portfwds = []
+    for portfwd in data:
+        msg = _verify_dict_keys(expected_keys, portfwd)
+        if msg:
+            LOG.debug(msg)
+            return msg
+        msg = _validate_range(portfwd['outside_port'], (0, 65535))
+        if msg:
+            LOG.debug(msg)
+            return msg
+        msg = _validate_ip_address(portfwd['inside_addr'])
+        if msg:
+            LOG.debug(msg)
+            return msg
+        msg = _validate_range(portfwd['inside_port'], (0, 65535))
+        if msg:
+            LOG.debug(msg)
+            return msg
+        msg = _validate_values(portfwd['protocol'].upper(), ('TCP', 'UDP'))
+        if msg:
+            LOG.debug(msg)
+            return msg
+        if portfwd in portfwds:
+            msg = _("Duplicate portforwarding '%s'") % portfwd
+            LOG.debug(msg)
+            return msg
+        portfwds.append(portfwd)
+
+
 def _validate_ip_address_or_none(data, valid_values=None):
     if data is None:
         return None
@@ -653,6 +690,7 @@ validators = {'type:dict': _validate_dict,
               'type:mac_address': _validate_mac_address,
               'type:mac_address_or_none': _validate_mac_address_or_none,
               'type:nameservers': _validate_nameservers,
+              'type:portforwardings': _validate_portforwardings,
               'type:non_negative': _validate_non_negative,
               'type:range': _validate_range,
               'type:regex': _validate_regex,
