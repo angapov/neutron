@@ -25,7 +25,8 @@ Create Date: 2013-12-11 11:47:27.548651
 
 # revision identifiers, used by Alembic.
 revision = '7e6c94d7da0'
-down_revision = 'ed93525fd003'
+down_revision = '20c469a5f920'
+#down_revision = 'ed93525fd003'
 
 # Change to ['*'] if this migration applies to all plugins
 
@@ -40,8 +41,8 @@ from neutron.db import migration
 
 
 def upgrade(active_plugins=None, options=None):
-    if not migration.should_run(active_plugins, migration_for_plugins):
-        return
+#    if not migration.should_run(active_plugins, migration_for_plugins):
+#        return
 
     op.create_table('portforwardingrules',
                     sa.Column('id', sa.String(length=36), nullable=False),

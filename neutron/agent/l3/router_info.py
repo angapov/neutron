@@ -61,6 +61,7 @@ class RouterInfo(object):
             use_ipv6=use_ipv6,
             namespace=self.ns_name)
         self.routes = []
+	self.portforwardings = []
         self.agent_conf = agent_conf
         self.driver = interface_driver
         # radvd is a neutron.agent.linux.ra.DaemonMonitor
@@ -532,6 +533,8 @@ class RouterInfo(object):
                                bridge=self.agent_conf.external_network_bridge,
                                namespace=self.ns_name,
                                prefix=EXTERNAL_DEV_PREFIX)
+	if ex_gw_port:
+            self.process_router_portforwardings(ex_gw_port)
 
         # Process SNAT rules for external gateway
         self.perform_snat_action(self._handle_router_snat_rules,
@@ -636,3 +639,47 @@ class RouterInfo(object):
         self.snat_ports = self.router.get(
             l3_constants.SNAT_ROUTER_INTF_KEY, [])
         self.enable_snat = self.router.get('enable_snat')
+    def _update_portforwardings(self, operation, portfwd):
+        """Configure the router's port forwarding rules."""
+        chain_in, chain_out = "PREROUTING", "snat"
+        rule_in = ("-p %(protocol)s"
+                   " -d %(outside_addr)s --dport %(outside_port)s"
+                   " -j DNAT --to %(inside_addr)s:%(inside_port)s"
+                   % portfwd)
+        rule_out = ("-p %(protocol)s"
+                    " -s %(inside_addr)s --sport %(inside_port)s"
+                    " -j SNAT --to %(outside_addr)s:%(outside_port)s"
+                    % portfwd)
+        if operation == 'create':
+            LOG.debug(_("Added portforwarding rule_in is '%s'"), rule_in)
+            self.iptables_manager.ipv4['nat'].add_rule(chain_in, rule_in,
+                                                     tag='portforwarding')
+            LOG.debug(_("Added portforwarding rule_out is '%s'"), rule_out)
+            self.iptables_manager.ipv4['nat'].add_rule(chain_out, rule_out,
+                                                     top=True,
+                                                     tag='portforwarding')
+        elif operation == 'delete':
+            LOG.debug(_("Removed portforwarding rule_in is '%s'"), rule_in)
+            self.iptables_manager.ipv4['nat'].remove_rule(chain_in, rule_in)
+            LOG.debug(_("Removed portforwarding rule_out is '%s'"), rule_out)
+            self.iptables_manager.ipv4['nat'].remove_rule(chain_out, rule_out)
+        else:
+            raise Exception('should never be here')
+
+    def process_router_portforwardings(self, ex_gw_port):
+        if 'portforwardings' not in self.router:
+            # note(jianingy): return when portforwarding extension
+            #                 is not enabled
+            return
+        new_portfwds = self.router['portforwardings']
+        for new_portfwd in new_portfwds:
+            new_portfwd['outside_addr'] = (
+                ex_gw_port.get('fixed_ips')[0].get('ip_address'))
+        old_portfwds = self.portforwardings
+        adds, removes = common_utils.diff_list_of_dict(old_portfwds,
+                                                       new_portfwds)
+        for portfwd in adds:
+            self._update_portforwardings(ri, 'create', portfwd)
+        for portfwd in removes:
+            self._update_portforwardings(ri, 'delete', portfwd)
+        self.portforwardings = new_portfwds

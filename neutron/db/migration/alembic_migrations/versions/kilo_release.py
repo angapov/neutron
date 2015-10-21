@@ -21,7 +21,8 @@ Create Date: 2015-04-16 00:00:00.000000
 
 # revision identifiers, used by Alembic.
 revision = 'kilo'
-down_revision = '20c469a5f920'
+down_revision = '7e6c94d7da0'
+#down_revision = '20c469a5f920'
 
 
 def upgrade():

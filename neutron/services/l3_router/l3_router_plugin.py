@@ -51,8 +51,7 @@ class L3RouterPlugin(common_db_mixin.CommonDbMixin,
     """
     supported_extension_aliases = ["dvr", "router", "ext-gw-mode",
                                    "extraroute", "l3_agent_scheduler",
-                                   "l3-ha",
-                                   "portforwarding"]
+                                   "l3-ha", "portforwarding"]
 
     def __init__(self):
         self.setup_rpc()

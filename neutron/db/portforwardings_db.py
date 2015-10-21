@@ -29,9 +29,8 @@ from neutron.db import model_base
 from neutron.db import models_v2
 from neutron.extensions import l3
 from neutron.extensions import portforwardings
-from neutron.openstack.common.db import exception as db_exc
-from neutron.openstack.common import log as logging
-
+from oslo_db import exception as db_exc
+from oslo_log import log as logging
 
 LOG = logging.getLogger(__name__)
 
