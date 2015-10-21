@@ -679,7 +679,7 @@ class RouterInfo(object):
         adds, removes = common_utils.diff_list_of_dict(old_portfwds,
                                                        new_portfwds)
         for portfwd in adds:
-            self._update_portforwardings(ri, 'create', portfwd)
+            self._update_portforwardings('create', portfwd)
         for portfwd in removes:
-            self._update_portforwardings(ri, 'delete', portfwd)
+            self._update_portforwardings('delete', portfwd)
         self.portforwardings = new_portfwds
